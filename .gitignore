@@ -1,0 +1,4 @@
+# Project exclude paths
+/venv/
+/pod_mqtt_publisher/Logs/
+/pod_mqtt_publisher/Settings/

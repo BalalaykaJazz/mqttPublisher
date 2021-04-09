@@ -5,11 +5,12 @@ Other messages are printed to the console
  """
 import logging
 import sys
+from config import get_full_path
 
 FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
 SHORT_FORMATTER = logging.Formatter("%(levelname)s — %(message)s")
-EVENT_LOG_FILE = "Logs/events.log"
-ERROR_LOG_FILE = "Logs/error.log"
+EVENT_LOG_FILE = get_full_path("Logs/events.log")
+ERROR_LOG_FILE = get_full_path("Logs/error.log")
 
 
 def _get_debug_handler():
