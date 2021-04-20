@@ -1,7 +1,7 @@
 """This module is used to post messages to mqtt broker"""
 from socket import gaierror
-import paho.mqtt.client as mqtt
-from event_logger import get_logger
+import paho.mqtt.client as mqtt  # type: ignore
+from event_logger import get_logger  # type: ignore
 
 event_log = get_logger("__mqtt_writer__")
 

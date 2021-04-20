@@ -1,13 +1,15 @@
 """This module is used to listen on a port to receive a message to write to the broker."""
 import socket
 import json
-from event_logger import get_logger
-from mqtt_writer import publish_to_mqtt
-from config import get_settings
+import time
+from event_logger import get_logger  # type: ignore
+from mqtt_writer import publish_to_mqtt  # type: ignore
+from config import get_settings  # type: ignore
 
 MESSAGE_STATUS_SUCCESSFUL = "HTTP/1.1 200 OK"
 MESSAGE_STATUS_UNSUCCESSFUL = "HTTP/1.1 404 Not Found"
 INCORRECT_FORMAT_TITLE = "Incorrect format of the received file: %s"
+SLEEP_DURATION_AFTER_SENDING = 3
 
 event_log = get_logger("__listener__")
 
@@ -34,7 +36,7 @@ class SocketConnection:
         except socket.gaierror as err:
             raise SocketConnectionError from err
 
-        self.server_socket.listen()
+        self.server_socket.listen(1)
         return self.server_socket
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -65,13 +67,14 @@ def start_listening() -> None:
                     report = received_message.get("topic"), received_message.get("message")
                     successful = publish_to_mqtt(report, settings_to_publish)
                 else:
-                    err = "Does not contain a required field topic or message"
-                    event_log.error(INCORRECT_FORMAT_TITLE, err)
+                    err_str = "Does not contain a required field topic or message"
+                    event_log.error(INCORRECT_FORMAT_TITLE, err_str)
                     successful = False
 
                 response = MESSAGE_STATUS_SUCCESSFUL if successful else MESSAGE_STATUS_UNSUCCESSFUL
                 conn.sendall(response.encode())
                 conn.close()
+                time.sleep(SLEEP_DURATION_AFTER_SENDING)
 
     except SocketConnectionError as err:
         event_log.error("Socket connection error. Can't receive message. Reason: %s", str(err))
