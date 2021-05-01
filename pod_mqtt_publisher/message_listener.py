@@ -1,5 +1,6 @@
 """This module is used to listen on a port to receive a message to write to the broker."""
 import socket
+import ssl
 import json
 import time
 from event_logger import get_logger  # type: ignore
@@ -24,7 +25,10 @@ class SocketConnection:
     def __init__(self, settings):
         self.host = settings.get("host")
         self.port = settings.get("port")
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM),
+                                             settings.get("ssl.key"),
+                                             settings.get("ssl.crt"),
+                                             True)
 
     def __enter__(self):
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

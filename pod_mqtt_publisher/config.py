@@ -7,6 +7,8 @@ SOCKET_SETTINGS_PATH = "settings/socket_settings.json"
 TLS_CA_CERTS_PATH = "settings/ca.crt"
 TLS_CERTFILE_PATH = "settings/donoff.crt"
 TLS_KEYFILE_PATH = "settings/donoff.key"
+SSL_KEYFILE_PATH = "settings/ssl.key"
+SSL_CERTFILE_PATH = "settings/ssl.crt"
 
 
 def get_full_path(file_name: str) -> str:
@@ -34,7 +36,10 @@ def get_settings(setting_name: str) -> dict:
         with open(get_full_path(SOCKET_SETTINGS_PATH), encoding="utf-8") as file:
             settings = json.load(file)
 
-        requested_settings = {"host": settings.get("host"), "port": settings.get("port")}
+        requested_settings = {"host": settings.get("host"),
+                              "port": settings.get("port"),
+                              "ssl.key": get_full_path(SSL_KEYFILE_PATH),
+                              "ssl.crt": get_full_path(SSL_CERTFILE_PATH)}
 
     else:
         requested_settings = {}
