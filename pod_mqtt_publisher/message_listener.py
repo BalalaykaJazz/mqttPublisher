@@ -1,5 +1,5 @@
 """This module is used to listen on a port to receive a message to write to the broker."""
-import socket
+from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 import ssl
 import json
 import time
@@ -26,16 +26,16 @@ class SocketConnection:
         self.host = settings.get("host")
         self.port = settings.get("port")
 
+        self.server_socket = socket(AF_INET, SOCK_STREAM)
+
         if settings.get("use_ssl"):
-            self.server_socket = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM),
-                                                 settings.get("ssl.key"),
-                                                 settings.get("ssl.crt"),
-                                                 True)
-        else:
-            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server_socket = ssl.wrap_socket(self.server_socket,
+                                                 keyfile=settings.get("SSL_KEYFILE_PATH"),
+                                                 certfile=settings.get("SSL_CERTFILE_PATH"),
+                                                 server_side=True)
 
     def __enter__(self):
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
         try:
             self.server_socket.bind((self.host, self.port))

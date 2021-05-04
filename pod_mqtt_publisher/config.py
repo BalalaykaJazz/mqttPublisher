@@ -7,8 +7,8 @@ SOCKET_SETTINGS_PATH = "settings/socket_settings.json"
 TLS_CA_CERTS_PATH = "settings/ca.crt"
 TLS_CERTFILE_PATH = "settings/donoff.crt"
 TLS_KEYFILE_PATH = "settings/donoff.key"
-SSL_KEYFILE_PATH = "settings/ssl.key"
-SSL_CERTFILE_PATH = "settings/ssl.crt"
+SSL_KEYFILE_PATH = "settings/server_key.pem"
+SSL_CERTFILE_PATH = "settings/server_cert.pem"
 
 
 def get_full_path(file_name: str) -> str:
@@ -41,8 +41,8 @@ def get_settings(setting_name: str) -> dict:
                               "use_ssl": settings.get("use_ssl")}
 
         if requested_settings.get("use_ssl"):
-            requested_settings["ssl.key"] = get_full_path(SSL_KEYFILE_PATH)
-            requested_settings["ssl.crt"] = get_full_path(SSL_CERTFILE_PATH)
+            requested_settings["SSL_KEYFILE_PATH"] = get_full_path(SSL_KEYFILE_PATH)
+            requested_settings["SSL_CERTFILE_PATH"] = get_full_path(SSL_CERTFILE_PATH)
 
     else:
         requested_settings = {}
