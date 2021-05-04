@@ -38,8 +38,11 @@ def get_settings(setting_name: str) -> dict:
 
         requested_settings = {"host": settings.get("host"),
                               "port": settings.get("port"),
-                              "ssl.key": get_full_path(SSL_KEYFILE_PATH),
-                              "ssl.crt": get_full_path(SSL_CERTFILE_PATH)}
+                              "use_ssl": settings.get("use_ssl")}
+
+        if requested_settings.get("use_ssl"):
+            requested_settings["ssl.key"] = get_full_path(SSL_KEYFILE_PATH)
+            requested_settings["ssl.crt"] = get_full_path(SSL_CERTFILE_PATH)
 
     else:
         requested_settings = {}
