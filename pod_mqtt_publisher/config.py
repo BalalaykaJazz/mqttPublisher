@@ -4,9 +4,9 @@ import json
 
 MQTT_SETTINGS_PATH = "settings/mqtt_settings.json"
 SOCKET_SETTINGS_PATH = "settings/socket_settings.json"
-TLS_CA_CERTS_PATH = "settings/ca.crt"
-TLS_CERTFILE_PATH = "settings/donoff.crt"
-TLS_KEYFILE_PATH = "settings/donoff.key"
+TLS_CA_CERTS_PATH = "settings/tls_ca_certs.crt"
+TLS_CERTFILE_PATH = "settings/tls_certfile.crt"
+TLS_KEYFILE_PATH = "settings/tls_keyfile.key"
 SSL_KEYFILE_PATH = "settings/server_key.pem"
 SSL_CERTFILE_PATH = "settings/server_cert.pem"
 
