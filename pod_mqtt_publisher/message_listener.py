@@ -1,5 +1,5 @@
 """This module is used to listen on a port to receive a message to write to the broker."""
-from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, gaierror
 import ssl
 import json
 import time
@@ -41,7 +41,7 @@ class SocketConnection:
             self.server_socket.bind((self.host, self.port))
         except PermissionError as err:
             raise SocketConnectionError from err
-        except socket.gaierror as err:
+        except gaierror as err:
             raise SocketConnectionError from err
 
         self.server_socket.listen(1)
@@ -57,7 +57,9 @@ def start_listening() -> None:
     settings_to_socket = get_settings("settings_to_socket")
     settings_to_publish = get_settings("settings_to_publish")
 
-    event_log.info(f"Start working on {settings_to_socket.get('host')}:{settings_to_socket.get('port')}")
+    event_log.info("Start working on %s:%s",
+                   settings_to_socket.get("host"),
+                   settings_to_socket.get("port"))
 
     try:
         with SocketConnection(settings_to_socket) as server_socket:
