@@ -53,15 +53,15 @@ class SocketConnection:
 
 def start_listening() -> None:
     """listen on a port to receive a message. Received message must be a dictionary"""
-    event_log.info("Start working")
 
     settings_to_socket = get_settings("settings_to_socket")
     settings_to_publish = get_settings("settings_to_publish")
 
+    event_log.info(f"Start working on {settings_to_socket.get('host')}:{settings_to_socket.get('port')}")
+
     try:
         with SocketConnection(settings_to_socket) as server_socket:
             while True:
-                event_log.debug("Wait connection...")
 
                 conn, _ = server_socket.accept()
                 request = conn.recv(1024).decode("utf-8")
