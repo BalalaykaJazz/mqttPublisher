@@ -4,6 +4,7 @@ import json
 
 MQTT_SETTINGS_PATH = "settings/mqtt_settings.json"
 SOCKET_SETTINGS_PATH = "settings/socket_settings.json"
+REGISTERED_USERS = "settings/users.json"
 TLS_CA_CERTS_PATH = "settings/tls_ca_certs.crt"
 TLS_CERTFILE_PATH = "settings/tls_certfile.crt"
 TLS_KEYFILE_PATH = "settings/tls_keyfile.key"
@@ -43,6 +44,14 @@ def get_settings(setting_name: str) -> dict:
         if requested_settings.get("use_ssl"):
             requested_settings["SSL_KEYFILE_PATH"] = get_full_path(SSL_KEYFILE_PATH)
             requested_settings["SSL_CERTFILE_PATH"] = get_full_path(SSL_CERTFILE_PATH)
+
+    elif setting_name == "registered_users":
+        with open(get_full_path(REGISTERED_USERS), encoding="utf-8") as file:
+            requested_settings = json.load(file)
+
+            for username, password in requested_settings.items():
+                if not isinstance(password, str):
+                    requested_settings[username] = str(password)
 
     else:
         requested_settings = {}

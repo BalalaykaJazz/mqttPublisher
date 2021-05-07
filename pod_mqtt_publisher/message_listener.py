@@ -3,6 +3,7 @@ from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, gaier
 import ssl
 import json
 import time
+from user_auth import client_authenticate
 from event_logger import get_logger  # type: ignore
 from mqtt_writer import publish_to_mqtt  # type: ignore
 from config import get_settings  # type: ignore
@@ -51,6 +52,12 @@ class SocketConnection:
         self.server_socket.close()
 
 
+def is_correct_format_message(received_message: dict) -> bool:
+    """The message must contain the required fields"""
+
+    return list(received_message.keys()) == ["topic", "message", "user", "password"]
+
+
 def start_listening() -> None:
     """listen on a port to receive a message. Received message must be a dictionary"""
 
@@ -73,13 +80,18 @@ def start_listening() -> None:
                 except json.decoder.JSONDecodeError as err:
                     event_log.error(INCORRECT_FORMAT_TITLE, str(err))
 
-                if received_message.get("topic") and received_message.get("message"):
-                    report = received_message.get("topic"), received_message.get("message")
-                    successful = publish_to_mqtt(report, settings_to_publish)
-                else:
-                    err_str = "Does not contain a required field topic or message"
+                if not is_correct_format_message(received_message):
+                    err_str = "Does not contain a required field"
                     event_log.error(INCORRECT_FORMAT_TITLE, err_str)
                     successful = False
+                elif not client_authenticate(received_message.get("user"),
+                                             received_message.get("password")):
+                    err_str = "Unknown username or password"
+                    event_log.error(err_str)
+                    successful = False
+                else:
+                    report = received_message.get("topic"), received_message.get("message")
+                    successful = publish_to_mqtt(report, settings_to_publish)
 
                 response = MESSAGE_STATUS_SUCCESSFUL if successful else MESSAGE_STATUS_UNSUCCESSFUL
                 conn.sendall(response.encode())
