@@ -6,6 +6,8 @@ import hashlib
 import hmac
 from config import get_settings
 
+CODE = "latin_1"
+
 
 def client_authenticate(client_user: str, client_password: str) -> bool:
     """
@@ -19,13 +21,13 @@ def client_authenticate(client_user: str, client_password: str) -> bool:
     if not user_password:
         return False
 
-    raw_client_password = client_password.encode("cp1251")
+    raw_client_password = client_password.encode(CODE)
 
     client_salt = raw_client_password[:32]
     client_key = raw_client_password[32:]
 
     new_key = hashlib.pbkdf2_hmac("sha256",
-                                  user_password.encode("utf-8"),
+                                  user_password.encode(CODE),
                                   client_salt,
                                   100000)
 
