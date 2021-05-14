@@ -55,7 +55,7 @@ class SocketConnection:
 def is_correct_format_message(received_message: dict) -> bool:
     """The message must contain the required fields"""
 
-    return list(received_message.keys()) == ["topic", "message", "user", "password"]
+    return sorted(list(received_message.keys())) == ["message", "password", "topic", "user"]
 
 
 def start_listening() -> None:
@@ -91,7 +91,10 @@ def start_listening() -> None:
                     successful = False
                 else:
                     report = received_message.get("topic"), received_message.get("message")
-                    successful = publish_to_mqtt(report, settings_to_publish)
+                    if report[0] == "" and report[1] == "test_auth_message":
+                        successful = True
+                    else:
+                        successful = publish_to_mqtt(report, settings_to_publish)
 
                 response = MESSAGE_STATUS_SUCCESSFUL if successful else MESSAGE_STATUS_UNSUCCESSFUL
                 conn.sendall(response.encode())
