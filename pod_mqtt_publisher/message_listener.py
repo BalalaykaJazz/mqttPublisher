@@ -3,7 +3,7 @@ import socket
 import ssl
 import json
 import time
-from user_auth import client_authenticate
+from user_auth import client_authenticate, get_salt_from_hash
 from event_logger import get_logger  # type: ignore
 from mqtt_writer import publish_to_mqtt, read_from_mqtt  # type: ignore
 from config import get_settings  # type: ignore
@@ -20,11 +20,11 @@ event_log = get_logger("__listener__")
 
 
 class SocketConnectionError(Exception):
-    """Common class for socket connection errors"""
+    """Исключение для ошибок при подключении к сокету"""
 
 
 class SocketConnection:
-    """Context manager for connect to socket"""
+    """Менеджер контекста для подключения к сокету"""
 
     def __init__(self, settings):
         self.host = settings.get("host")
@@ -56,9 +56,55 @@ class SocketConnection:
 
 
 def is_correct_format_message(received_message: dict) -> bool:
-    """The message must contain the required fields"""
+    """Сообщение должно содержать обязательные поля."""
+
+    if received_message.get("action") == "/get_salt" \
+            and received_message.get("user"):
+        return True
+
+    if received_message.get("action") == "/check_auth" \
+            and received_message.get("user")\
+            and received_message.get("password"):
+        return True
 
     return sorted(list(received_message.keys())) == ["message", "password", "topic", "user"]
+
+
+def execute_action(message: dict) -> str:
+    """
+    Выполнение действия указанного в поле action.
+
+    Возвращаемое значение: строка с результатом действия
+    """
+
+    action = message.get("action")
+
+    if action == "/get_salt":
+        return get_salt_from_hash(message.get("user"))
+
+    if action == "/check_auth":
+        result = check_authorization(message)
+        if result:
+            event_log.info("login user %s : %s", message.get("user"), result)
+        return result
+
+    return f"Неизвестное действие: {action}"
+
+
+def check_authorization(message: dict) -> str:
+    """
+    Проверяется правильность логина и пароля, который ввел пользователь.
+
+    Возвращаемое значение: строка с результатом проверки.
+    """
+
+    if message.get("user") is None or message.get("password") is None:
+        raise KeyError
+
+    result = client_authenticate(message.get("user"),
+                                 message.get("password"))
+
+    return MESSAGE_STATUS_SUCCESSFUL if result else "Unknown username or password"
 
 
 def message_handling(request: str, settings_to_publish: dict) -> str:
@@ -69,28 +115,30 @@ def message_handling(request: str, settings_to_publish: dict) -> str:
     Operation's result is returned to client.
     """
 
+    # Сообщение должно быть в формате JSON
     try:
         received_message = json.loads(request)
     except json.decoder.JSONDecodeError as err:
         event_log.error(INCORRECT_FORMAT_TITLE, str(err))
-        return "Message wrong format"
+        return "Неправильный формат сообщения"
 
+    # Сообщение дожно иметь необходимые поля
     if not is_correct_format_message(received_message):
-        answer_for_client = "The message does not contain a required field"
+        answer_for_client = "Сообщение не содержит необходимые поля"
         event_log.error(INCORRECT_FORMAT_TITLE, answer_for_client)
         return answer_for_client
 
-    if not client_authenticate(received_message.get("user"),
-                               received_message.get("password")):
-        answer_for_client = "Unknown username or password"
+    # Выполнение служебный действий
+    if received_message.get("action"):
+        return execute_action(received_message)
+
+    # Проверка авторизации пользователя (при каждом сообщении)
+    answer_for_client = check_authorization(received_message)
+    if answer_for_client != MESSAGE_STATUS_SUCCESSFUL:
         event_log.error(answer_for_client)
         return answer_for_client
 
     report = received_message.get("topic"), received_message.get("message")
-    if report[1] == AUTHENTICATION_CHECK:
-        event_log.info("login user: %s", received_message.get("user"))
-        return MESSAGE_STATUS_SUCCESSFUL
-
     successful = publish_to_mqtt(report, settings_to_publish)
 
     if successful and report[0][-COUNT_OF_CHAR:] == CLIENT_WAITING_ANSWER:
