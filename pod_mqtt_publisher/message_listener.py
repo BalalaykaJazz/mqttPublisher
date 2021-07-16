@@ -2,7 +2,7 @@
 import socket
 import ssl
 import json
-import time
+# import time
 from user_auth import client_authenticate, get_salt_from_hash
 from event_logger import get_logger  # type: ignore
 from mqtt_writer import publish_to_mqtt, read_from_mqtt  # type: ignore
@@ -58,11 +58,11 @@ class SocketConnection:
 def is_correct_format_message(received_message: dict) -> bool:
     """Сообщение должно содержать обязательные поля."""
 
-    if received_message.get("action") == "/get_salt" \
+    if received_message.get("message") == "/get_salt" \
             and received_message.get("user"):
         return True
 
-    if received_message.get("action") == "/check_auth" \
+    if received_message.get("message") == "/check_auth" \
             and received_message.get("user")\
             and received_message.get("password"):
         return True
@@ -77,7 +77,7 @@ def execute_action(message: dict) -> str:
     Возвращаемое значение: строка с результатом действия
     """
 
-    action = message.get("action")
+    action = message.get("message")
 
     if action == "/get_salt":
         return get_salt_from_hash(message.get("user"))
@@ -129,7 +129,8 @@ def message_handling(request: str, settings_to_publish: dict) -> str:
         return answer_for_client
 
     # Выполнение служебный действий
-    if received_message.get("action"):
+    if received_message.get("message") == "/get_salt" or\
+            received_message.get("message") == "/check_auth":
         return execute_action(received_message)
 
     # Проверка авторизации пользователя (при каждом сообщении)
@@ -166,7 +167,7 @@ def open_socket(settings_to_socket: dict, settings_to_publish: dict) -> None:
 
                 conn.sendall(response.encode())
                 conn.close()
-                time.sleep(SLEEP_DURATION_AFTER_SENDING)
+                # time.sleep(SLEEP_DURATION_AFTER_SENDING)
 
     except SocketConnectionError as err:
         event_log.error("Socket connection error. Can't receive message. Reason: %s", str(err))
