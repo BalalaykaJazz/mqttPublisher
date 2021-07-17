@@ -61,7 +61,8 @@ def publish_to_mqtt(report: tuple, settings: dict) -> bool:
             event_log.info("Сообщение %s было опубликовано %s", message, topic)
 
     except MQTTConnectionError as err:
-        event_log.error("Ошибка подключения mqtt. Невозможно опубликовать сообщение по причине: %s", str(err))
+        event_log.error("Ошибка подключения mqtt."
+                        " Невозможно опубликовать сообщение по причине: %s", str(err))
         return False
 
     return info.is_published()
@@ -114,5 +115,5 @@ def get_answer_from_mqtt(reply_queue: mQueue,
                               msg_count=1,
                               tls=tls)
 
-    event_log.info("Получено сообщение из топика %s", topic)
+    event_log.info("Получено сообщение из топика %s", str(topic))
     reply_queue.put(answer.payload.decode())
