@@ -3,13 +3,12 @@ This program for test sending a message to message_listener
 """
 import socket
 import sys
-from config import get_settings
+from src.pod_mqtt_publisher.config import settings
 
-settings_to_socket = get_settings("settings_to_socket")
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
-    server_socket.connect((settings_to_socket.get("host"), settings_to_socket.get("port")))
+    server_socket.connect((settings.socket_host, settings.socket_port))
 except ConnectionRefusedError:
     print("Server is not running")
     sys.exit(1)

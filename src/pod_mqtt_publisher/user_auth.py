@@ -1,16 +1,16 @@
 """
-Client authorization on the server
+Процедуры для авторизации в mqtt_publisher
 """
 
 import hmac
-from pod_mqtt_publisher.config import get_settings
+from src.pod_mqtt_publisher.config import registered_users
 
 
 def client_authenticate(client_user: str, received_token_hash: str) -> bool:
     """
-    Login and password verification.
-    User must be specified in the system.
-    The password received from the client must match the server password.
+    Аутентификация пользователя.
+    Пользователь должен быть предварительно зарегистрирован в системе.
+    Полученный от клиента хэш пароля должен совпадать с хешом на сервере.
     """
 
     correct_token_hash = get_password_hash(client_user)
@@ -27,10 +27,10 @@ def get_password_hash(client_user: str) -> str:
     Если пользователь не зарегистрирован, то возвращается пустая строка.
     """
 
-    if _users.get(client_user) is None:
+    if registered_users.get(client_user) is None:
         return ""
 
-    return _users[client_user]
+    return registered_users[client_user]
 
 
 def get_salt_from_hash(client_user: str) -> str:
@@ -42,6 +42,3 @@ def get_salt_from_hash(client_user: str) -> str:
     token_hash = get_password_hash(client_user)
 
     return token_hash[:64] if token_hash else ""
-
-
-_users = get_settings("registered_users")

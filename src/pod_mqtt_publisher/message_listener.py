@@ -2,11 +2,10 @@
 import socket
 import ssl
 import json
-# import time
-from user_auth import client_authenticate, get_salt_from_hash
-from event_logger import get_logger  # type: ignore
-from mqtt_writer import publish_to_mqtt, read_from_mqtt  # type: ignore
-from config import get_settings  # type: ignore
+from src.pod_mqtt_publisher.user_auth import client_authenticate, get_salt_from_hash
+from src.pod_mqtt_publisher.event_logger import get_info_logger, get_error_logger
+from src.pod_mqtt_publisher.mqtt_writer import publish_to_mqtt, read_from_mqtt
+from src.pod_mqtt_publisher.config import get_settings_to_socket, get_settings_to_publish
 
 MESSAGE_STATUS_SUCCESSFUL = "OK"
 INCORRECT_FORMAT_TITLE = "Incorrect format of the received file: %s"
@@ -16,7 +15,8 @@ CLIENT_WAITING_ANSWER = "/in/params"
 COUNT_OF_CHAR = len(CLIENT_WAITING_ANSWER)
 TOPIC_WITH_ANSWERS = "/out/info"
 
-event_log = get_logger("__listener__")
+event_log = get_info_logger("INFO__listener__")
+error_log = get_error_logger("ERR__listener__")
 
 
 class SocketConnectionError(Exception):
@@ -27,15 +27,15 @@ class SocketConnection:
     """Менеджер контекста для подключения к сокету"""
 
     def __init__(self, settings):
-        self.host = settings.get("host")
-        self.port = settings.get("port")
+        self.host = settings.get("socket_host")
+        self.port = settings.get("socket_port")
 
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         if settings.get("use_ssl"):
             self.server_socket = ssl.wrap_socket(self.server_socket,
-                                                 keyfile=settings.get("SSL_KEYFILE_PATH"),
-                                                 certfile=settings.get("SSL_CERTFILE_PATH"),
+                                                 keyfile=settings.get("ssl_keyfile_path"),
+                                                 certfile=settings.get("ssl_certfile_path"),
                                                  server_side=True)
 
     def __enter__(self):
@@ -104,15 +104,17 @@ def check_authorization(message: dict) -> str:
     result = client_authenticate(message.get("user"),
                                  message.get("password"))
 
-    return MESSAGE_STATUS_SUCCESSFUL if result else "Unknown username or password"
+    return MESSAGE_STATUS_SUCCESSFUL if result else "Неизвестное имя пользователя или пароль"
 
 
 def message_handling(request: str, settings_to_publish: dict) -> str:
     """
-    Checking incoming message and publish to mqtt.
-    If topic contains CLIENT_WAITING_ANSWER we subscribe to TOPIC_WITH_ANSWERS
+    Проверяет входящее сообщение и публикует в брокере mqtt.
+    Если сообщение подразумевает ответ от брокера
+    (топик соответствует формату CLIENT_WAITING_ANSWER),
+    То подписывается на топик TOPIC_WITH_ANSWERS
 
-    Operation's result is returned to client.
+    Результат операции возвращается клиенту.
     """
 
     # Сообщение должно быть в формате JSON
@@ -143,17 +145,17 @@ def message_handling(request: str, settings_to_publish: dict) -> str:
     successful = publish_to_mqtt(report, settings_to_publish)
 
     if successful and report[0][-COUNT_OF_CHAR:] == CLIENT_WAITING_ANSWER:
-        # get answer from device
+        # Получение ответа от устройства
         topic_with_answer = report[0][:-COUNT_OF_CHAR] + TOPIC_WITH_ANSWERS
         return read_from_mqtt(settings=settings_to_publish,
                               topic=topic_with_answer)
 
-    return MESSAGE_STATUS_SUCCESSFUL if successful else "Can't publish message."
+    return MESSAGE_STATUS_SUCCESSFUL if successful else "Невозможно опубликовать сообщение"
 
 
-def open_socket(settings_to_socket: dict, settings_to_publish: dict) -> None:
+def open_socket(settings_to_socket: dict, settings_to_publish: dict):
     """
-    listen on a port to receive a message. Received message must be a dictionary
+    Прослушивает порт и получает сообщение
     """
 
     try:
@@ -167,24 +169,24 @@ def open_socket(settings_to_socket: dict, settings_to_publish: dict) -> None:
 
                 conn.sendall(response.encode())
                 conn.close()
-                # time.sleep(SLEEP_DURATION_AFTER_SENDING)
 
     except SocketConnectionError as err:
-        event_log.error("Socket connection error. Can't receive message. Reason: %s", str(err))
+        event_log.error("Ошибка подключения к сокету."
+                        " Не удалось получить сообщение по причине: %s", str(err))
     except socket.timeout:
         open_socket(settings_to_socket, settings_to_publish)
 
 
-def start_listening() -> None:
-    """Get settings and open socket"""
+def start_listening():
+    """Получение настроек и открытие сокета"""
 
-    settings_to_socket = get_settings("settings_to_socket")
-    settings_to_publish = get_settings("settings_to_publish")
+    settings_to_socket = get_settings_to_socket()
+    settings_to_publish = get_settings_to_publish()
 
-    event_log.info("Start working on %s:%s",
-                   settings_to_socket.get("host"),
-                   settings_to_socket.get("port"))
+    event_log.info("Начало работы: %s:%s",
+                   settings_to_socket.get("socket_host"),
+                   settings_to_socket.get("socket_port"))
 
     open_socket(settings_to_socket, settings_to_publish)
 
-    event_log.info("End working")
+    event_log.info("Завершение работы")

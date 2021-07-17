@@ -1,7 +1,6 @@
 # Project exclude paths
 /venv/
 /.pytest_cache/
-/pod_mqtt_publisher/logs/
-/pod_mqtt_publisher/settings/
-/pod_mqtt_publisher/settings/mqtt_settings.json
-/pod_mqtt_publisher/settings/socket_settings.json
+/src/pod_mqtt_publisher/logs/
+/src/pod_mqtt_publisher/settings/
+.env
