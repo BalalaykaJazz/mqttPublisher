@@ -3,7 +3,7 @@ This program for test sending a message to message_listener
 """
 import socket
 import sys
-from src.pod_mqtt_publisher.config import settings
+from src.pod_mqtt_publisher import settings  # pylint: disable = import-error
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

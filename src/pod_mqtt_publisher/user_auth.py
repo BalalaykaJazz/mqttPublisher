@@ -3,7 +3,7 @@
 """
 
 import hmac
-from src.pod_mqtt_publisher.config import registered_users
+from src.pod_mqtt_publisher import registered_users  # pylint: disable = import-error
 
 
 def client_authenticate(client_user: str, received_token_hash: str) -> bool:

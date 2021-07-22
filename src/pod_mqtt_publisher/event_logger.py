@@ -5,7 +5,7 @@
 """
 import logging
 import sys
-from src.pod_mqtt_publisher.config import get_full_path
+from src.pod_mqtt_publisher import get_full_path  # pylint: disable = import-error
 
 FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
 SHORT_FORMATTER = logging.Formatter("%(levelname)s — %(message)s")
