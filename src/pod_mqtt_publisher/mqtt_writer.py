@@ -1,18 +1,19 @@
-"""This module is used to post messages to mqtt broker"""
+"""Этот модуль используется для отправки сообщений в mqtt брокер"""
 from socket import gaierror
-import multiprocessing  # type: ignore
-from multiprocessing.queues import Queue as mQueue  # type: ignore
+import multiprocessing
+from multiprocessing.queues import Queue as mQueue
 from datetime import datetime
-import paho.mqtt.client as mqtt  # type: ignore
-import paho.mqtt.subscribe as subscribe  # type: ignore
-from event_logger import get_logger  # type: ignore
+import paho.mqtt.client as mqtt
+import paho.mqtt.subscribe as subscribe
+from src.pod_mqtt_publisher import get_info_logger, get_error_logger  # pylint: disable = import-error
 
-event_log = get_logger("__mqtt_writer__")
+event_log = get_info_logger("INFO__mqtt_writer__")
+error_log = get_error_logger("ERR__mqtt_writer__")
 TIMEOUT_WAIT_MQTT = 15
 
 
 class MQTTConnectionError(Exception):
-    """Common class for mqtt connection errors"""
+    """Исключение для ошибок подключения к mqtt брокеру"""
 
 
 class MqttConnection:
@@ -42,12 +43,12 @@ class MqttConnection:
 
 def publish_to_mqtt(report: tuple, settings: dict) -> bool:
     """
-    Publish one message to mqtt broker. Return message sending result.
+    Публикуется сообщение в mqtt брокер. Возвращается результат отправки.
 
-    report: tuple (topic: str, message: str)
+    Ответ: tuple (topic: str, message: str)
 
     settings: dict (broker_settings: dict, tls: dict)
-    broker_settings: dict (host: str, port: int, keepalive: int)
+    broker_settings: dict (broker_host: str, broker_port: int, broker_keep_alive: int)
     tls: dict (ca_certs: str, certfile: str, keyfile: str)
     """
 
@@ -55,12 +56,13 @@ def publish_to_mqtt(report: tuple, settings: dict) -> bool:
         with MqttConnection(settings) as client:
             topic, message = report
             info = client.publish(topic, message, qos=1)
-            info.wait_for_publish()  # The message is guaranteed to be sent
+            info.wait_for_publish()  # Сообщение гарантировано отправлено
 
-            event_log.info("The message %s was published to %s", message, topic)
+            event_log.info("Сообщение %s было опубликовано %s", message, topic)
 
     except MQTTConnectionError as err:
-        event_log.error("MQTT connection error. Can't publish message. Reason: %s", str(err))
+        event_log.error("Ошибка подключения mqtt."
+                        " Невозможно опубликовать сообщение по причине: %s", str(err))
         return False
 
     return info.is_published()
@@ -113,5 +115,5 @@ def get_answer_from_mqtt(reply_queue: mQueue,
                               msg_count=1,
                               tls=tls)
 
-    event_log.info("Received message from topic %s", topic)
-    reply_queue.put(answer.payload.decode())
+    event_log.info("Получено сообщение из топика %s", str(topic))
+    reply_queue.put(answer.payload.decode())  # pylint: disable = no-member

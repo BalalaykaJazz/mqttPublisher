@@ -1,7 +1,7 @@
 """Тестирование файла config.py и ипользуемых в нем файлов настроек"""
 import os
 import pytest  # type: ignore
-from pod_mqtt_publisher import config  # type: ignore
+from src.pod_mqtt_publisher import config  # type: ignore
 
 
 @pytest.mark.parametrize("test_path", ["pod_mqtt_publisher/logs",
