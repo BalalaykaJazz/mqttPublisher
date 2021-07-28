@@ -2,10 +2,10 @@
 import socket
 import ssl
 import json
-from src.pod_mqtt_publisher import client_authenticate, get_salt_from_hash  # pylint: disable = import-error
-from src.pod_mqtt_publisher import get_info_logger, get_error_logger  # pylint: disable = import-error
-from src.pod_mqtt_publisher import publish_to_mqtt, read_from_mqtt  # pylint: disable = import-error
-from src.pod_mqtt_publisher import get_settings_to_socket, get_settings_to_publish  # pylint: disable = import-error
+from .user_auth import client_authenticate, get_salt_from_hash  # pylint: disable = import-error
+from .event_logger import get_info_logger, get_error_logger  # pylint: disable = import-error
+from .mqtt_writer import publish_to_mqtt, read_from_mqtt  # pylint: disable = import-error
+from .config import get_settings_to_socket, get_settings_to_publish  # pylint: disable = import-error
 
 MESSAGE_STATUS_SUCCESSFUL = "OK"
 INCORRECT_FORMAT_TITLE = "Incorrect format of the received file: %s"
@@ -175,6 +175,8 @@ def open_socket(settings_to_socket: dict, settings_to_publish: dict):
                         " Не удалось получить сообщение по причине: %s", str(err))
     except socket.timeout:
         open_socket(settings_to_socket, settings_to_publish)
+    except KeyboardInterrupt:
+        event_log.info("Ручная остановка программы")
 
 
 def start_listening():

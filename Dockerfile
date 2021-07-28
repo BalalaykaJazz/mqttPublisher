@@ -1,9 +1,11 @@
-FROM python:3.7-alpine3.8
+FROM python
 
-RUN pip install paho-mqtt
+WORKDIR /app
 
-# COPY ./requirements.txt /src/
-COPY ./pod_mqtt_publisher /src/
+COPY mqtt_publisher_run.py /app
+COPY requirements.txt /app
+COPY src /app/src
 
-RUN ["mkdir", "/src/logs"]
-CMD ["python", "/src/mqtt_publisher_run.py"]
+RUN pip install -r /app/requirements.txt
+RUN ["mkdir", "/app/src/mqtt_pub/logs"]
+CMD ["python", "mqtt_publisher_run.py"]
