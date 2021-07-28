@@ -5,7 +5,7 @@ from multiprocessing.queues import Queue as mQueue
 from datetime import datetime
 import paho.mqtt.client as mqtt
 import paho.mqtt.subscribe as subscribe
-from src.pod_mqtt_publisher import get_info_logger, get_error_logger  # pylint: disable = import-error
+from .event_logger import get_info_logger, get_error_logger  # pylint: disable = import-error
 
 event_log = get_info_logger("INFO__mqtt_writer__")
 error_log = get_error_logger("ERR__mqtt_writer__")
