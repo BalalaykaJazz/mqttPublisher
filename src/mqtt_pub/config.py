@@ -74,22 +74,19 @@ class Settings(BaseSettings):  # pylint: disable = too-few-public-methods
     broker_port: int = 8883
     broker_use_tls: bool = False
     broker_keep_alive: int = 60
-    tls_ca_certs_path: str = TLS_CA_CERTS_PATH
-    tls_certfile_path: str = TLS_CERTFILE_PATH
-    tls_keyfile_path: str = TLS_KEYFILE_PATH
+    tls_ca_certs_path: str = get_full_path(TLS_CA_CERTS_PATH)
+    tls_certfile_path: str = get_full_path(TLS_CERTFILE_PATH)
+    tls_keyfile_path: str = get_full_path(TLS_KEYFILE_PATH)
 
     # socket_settings
     socket_host: str = "127.0.0.1"
     socket_port: int = 5000
     use_ssl: bool = False
-    ssl_keyfile_path: str = SSL_KEYFILE_PATH
-    ssl_certfile_path: str = SSL_CERTFILE_PATH
+    ssl_keyfile_path: str = get_full_path(SSL_KEYFILE_PATH)
+    ssl_certfile_path: str = get_full_path(SSL_CERTFILE_PATH)
 
 
-settings = Settings(_env_file=".env",
+settings = Settings(_env_file=get_full_path(".env"),
                     _env_file_encoding="utf-8")
 
 registered_users = get_registered_users(REGISTERED_USERS_PATH)
-
-if not os.path.exists("logs"):
-    os.mkdir("logs")
