@@ -4,7 +4,7 @@ import ssl
 import json
 from .user_auth import client_authenticate, get_salt_from_hash  # pylint: disable = import-error
 from .event_logger import get_info_logger, get_error_logger  # pylint: disable = import-error
-from .mqtt_writer import publish_to_mqtt, read_from_mqtt  # pylint: disable = import-error
+from .mqtt_writer import read_from_mqtt  # pylint: disable = import-error
 from .config import get_settings_to_socket, get_settings_to_publish  # pylint: disable = import-error
 
 MESSAGE_STATUS_SUCCESSFUL = "OK"
@@ -80,7 +80,7 @@ def execute_action(message: dict) -> str:
     action = message.get("message")
 
     if action == "/get_salt":
-        return get_salt_from_hash(message.get("user"))
+        return get_salt_from_hash(message["user"])
 
     if action == "/check_auth":
         result = check_authorization(message)
@@ -101,8 +101,8 @@ def check_authorization(message: dict) -> str:
     if message.get("user") is None or message.get("password") is None:
         raise KeyError
 
-    result = client_authenticate(message.get("user"),
-                                 message.get("password"))
+    result = client_authenticate(message["user"],
+                                 message["password"])
 
     return MESSAGE_STATUS_SUCCESSFUL if result else "Неизвестное имя пользователя или пароль"
 
@@ -142,15 +142,16 @@ def message_handling(request: str, settings_to_publish: dict) -> str:
         return answer_for_client
 
     report = received_message.get("topic"), received_message.get("message")
-    successful = publish_to_mqtt(report, settings_to_publish)
 
-    if successful and report[0][-COUNT_OF_CHAR:] == CLIENT_WAITING_ANSWER:
+    if report[0][-COUNT_OF_CHAR:] == CLIENT_WAITING_ANSWER:
         # Получение ответа от устройства
         topic_with_answer = report[0][:-COUNT_OF_CHAR] + TOPIC_WITH_ANSWERS
         return read_from_mqtt(settings=settings_to_publish,
-                              topic=topic_with_answer)
+                              topic_for_read=topic_with_answer,
+                              topic_for_write=report[0],
+                              message=report[1])
 
-    return MESSAGE_STATUS_SUCCESSFUL if successful else "Невозможно опубликовать сообщение"
+    return MESSAGE_STATUS_SUCCESSFUL
 
 
 def open_socket(settings_to_socket: dict, settings_to_publish: dict):
