@@ -5,7 +5,7 @@ Mqtt publisher открывает и слушает сокет. Если при�
 то оно публикуется в  mqtt брокер.
 """
 
-from src.mqtt_pub.message_listener import start_listening  # pylint: disable = import-error
+from mqtt_pub.message_listener import start_listening  # pylint: disable = import-error
 
 if __name__ == "__main__":
     start_listening()
