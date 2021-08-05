@@ -1,5 +1,6 @@
 """Этот модуль используется для отправки сообщений в mqtt брокер"""
 from socket import gaierror
+from time import sleep
 import multiprocessing
 from multiprocessing.queues import Queue as mQueue
 from datetime import datetime
@@ -9,7 +10,7 @@ from .event_logger import get_info_logger, get_error_logger  # pylint: disable =
 
 event_log = get_info_logger("INFO__mqtt_writer__")
 error_log = get_error_logger("ERR__mqtt_writer__")
-TIMEOUT_WAIT_MQTT = 15
+TIMEOUT_WAIT_MQTT = 30
 
 
 class MQTTConnectionError(Exception):
@@ -68,7 +69,8 @@ def publish_to_mqtt(report: tuple, settings: dict) -> bool:
     return info.is_published()
 
 
-def read_from_mqtt(settings: dict, topic: str) -> str:
+def read_from_mqtt(settings: dict, message: str,
+                   topic_for_write: str, topic_for_read: str) -> str:
     """
     Получим ответ из mqtt с помощью функции get_answer_from_mqtt.
     Функция является блокирующей, поэтому предусмотрим возможность отказаться от ожидания ответа.
@@ -78,14 +80,17 @@ def read_from_mqtt(settings: dict, topic: str) -> str:
     Возвращаемое значение: строка с полученным ответом или сообщением о таймауте.
     """
 
-    ctx = multiprocessing.get_context('spawn')
+    ctx = multiprocessing.get_context("spawn")
     result_queue = ctx.Queue()
     proc = ctx.Process(target=get_answer_from_mqtt,
                        args=(result_queue,
-                             topic,
+                             topic_for_read,
                              settings.get("broker_settings"),
                              settings.get("tls")))
     proc.start()
+    sleep(1)  # делаем паузу перед отправкой сообщения
+
+    publish_to_mqtt((topic_for_write, message), settings)
 
     start = datetime.now()
     while (datetime.now() - start).seconds < TIMEOUT_WAIT_MQTT:
