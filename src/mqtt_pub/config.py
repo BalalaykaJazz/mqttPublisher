@@ -86,7 +86,7 @@ class Settings(BaseSettings):  # pylint: disable = too-few-public-methods
     ssl_certfile_path: str = get_full_path(SSL_CERTFILE_PATH)
 
 
-settings = Settings(_env_file=get_full_path(".env"),
+settings = Settings(_env_file=get_full_path("settings/.env"),
                     _env_file_encoding="utf-8")
 
 registered_users = get_registered_users(REGISTERED_USERS_PATH)
