@@ -1,0 +1,25 @@
+{
+        "donoff": "ENC[AES256_GCM,data:KOErONoc7q8NXIbyvK6zhVMjlwvbCEJODktw1yT6TMDIzcpY0VhUiyNY3UegQ0H96FzyQ37c08u+YN0HcYmobawQilgQ4SgkgnipG+CdEI51SLN24C/D3GOCABh7e7d5JEC4xv+fGRv8iwcYOKPm6k63du+VU8uLcYSNeCcRG20=,iv:9/Kotx3deszs4Apv1zwWnNjWTpejecGKHbPoRtkp9Ag=,tag:UmFEvkkb5E8v8LRW2i2opg==,type:str]",
+        "dmn": "ENC[AES256_GCM,data:5pJPLd/XlzYwdr94d6yh9LG27uZEM3JyC5+T4dcasYF2cfUKdGqO1o4os2V7WuzmVctAaVFhF1axSmbeNPIuqNSS9rGxxo0PfyDhxPkmRxmeZpgs+uSua5OcESce5Hg9qmy2XZKNE71Zq31fQarIIsUs6cQcmvmyKb+kKNJgMoE=,iv:qtqUahyD4mOb/QkFWoj0c9OEdVUOO9d/k0LnjhQGaH0=,tag:vfH2gHclE3rZ9bSzK1LuXg==,type:str]",
+        "balalaykajazz": "ENC[AES256_GCM,data:kIHnMygP7x/n/DTh6Fq3AlmFVONFirTFoQP91TEcTdpZxJakns4xtSY/hePbHvJ0c9vrnUMWstrUuFmqctqEbJtKGe6zRhTfMn9zMtvrAGBLP8mFLDLW6qBnSdjglI6m46KLQqsjcw3R/5n6orXHWBcG7JF9X16kgHL74a9dU+E=,iv:kK9y8va4k8bua6tSrE1M++pxb7VFvJTUDLemfvoHeMc=,tag:gD23X3Nkv8jZoiMCp53dfA==,type:str]",
+        "sops": {
+                "kms": null,
+                "gcp_kms": null,
+                "azure_kv": null,
+                "hc_vault": [
+                        {
+                                "vault_address": "https://vault.nnz-ipc.io:8200",
+                                "engine_path": "sops",
+                                "key_name": "iot",
+                                "created_at": "2021-10-14T09:04:03Z",
+                                "enc": "vault:v1:f9LCy3L6uCbZIEPTrQtQbFqLnuXSbdq7TR3J+QeKvEW+YiARlqe0keSW9CM0g99SiCCOu1euOrzcKW5p"
+                        }
+                ],
+                "age": null,
+                "lastmodified": "2021-10-14T09:04:03Z",
+                "mac": "ENC[AES256_GCM,data:1Qqy1aHM2fESAvVhlq4Gc+htnunPhrUo5f2oX3Tjk6vNZqb9Ej+JvvXCavakkB90NZFtKbJKH5Ul1ZylU/l+ENDKU2JY/fmRLDmCeX8eAHOslIZrwcdN+zouq/WIr7nk4b+ek59OizwykL3ntM7RO4Yy+TaFYY8ZfvwgmnqwuGo=,iv:azCy2fOeQ1VWnJgoHdhEZf5fQyRB/xNNnG/pNeKPRDg=,tag:y+WS9H5o0kC3dO+SyxKfJw==,type:str]",
+                "pgp": null,
+                "unencrypted_suffix": "_unencrypted",
+                "version": "3.7.1"
+        }
+}
