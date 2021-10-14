@@ -2,5 +2,10 @@
 /venv/
 /.pytest_cache/
 /src/mqtt_pub/logs/
-/src/mqtt_pub/settings/
-/src/mqtt_pub/.env
+/src/mqtt_pub/settings/users.json
+/src/mqtt_pub/settings/.env
+/src/mqtt_pub/settings/server_cert.pem
+/src/mqtt_pub/settings/server_key.pem
+/src/mqtt_pub/settings/tls_ca_certs.crt
+/src/mqtt_pub/settings/tls_certfile.crt
+/src/mqtt_pub/settings/tls_keyfile.key
